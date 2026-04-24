@@ -1,4 +1,4 @@
-"""Entry point — delegates to the CLI."""
+"""Entry point — delegates to the CLI group."""
 
 from atomic_fact.cli import main
 

@@ -24,7 +24,8 @@ atomic-fact/
 │       ├── cli.py          # CLI argument parsing and entry point
 │       ├── extractor.py    # Core extraction logic (LLM interaction)
 │       ├── models.py       # Data models for atomic facts (output schema)
-│       └── reader.py       # Text file reading / input handling
+│       ├── reader.py       # Text file reading / input handling
+│       └── viewer.py       # HTML report generation from JSON output
 ├── tests/
 │   └── ...
 ├── main.py
@@ -38,3 +39,6 @@ atomic-fact/
 - One module per responsibility (reading input, calling the LLM, defining output models)
 - Tests mirror the source layout under `tests/`
 - CLI entry point is `main.py`, which delegates to `src/atomic_fact/cli.py`
+- `reader.py` handles both single-file and directory input (enumerating `.txt` files)
+- `models.py` contains both `ExtractionResult` (single-doc) and `CollectionResult` (multi-doc) schemas
+- `extractor.py` processes one document at a time; collection-level orchestration lives in `cli.py`

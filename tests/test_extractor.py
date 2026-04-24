@@ -26,7 +26,9 @@ def _sample_result():
             AtomicFact(
                 fact="Wayne met the president.",
                 quote="Congressman Wayne met with the president on October 4, 1968.",
-                entities=["Wayne", "the president"],
+                people=["Wayne", "the president"],
+                organizations=[],
+                places=[],
                 dates=["1968-10-04"],
                 confidence=Confidence.HIGH,
             )

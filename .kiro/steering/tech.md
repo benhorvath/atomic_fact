@@ -23,7 +23,8 @@
 uv sync                        # Install/sync all dependencies
 uv add <pkg>                   # Add a runtime dependency
 uv add --dev <pkg>             # Add a dev dependency
-uv run main.py <file>          # Run the CLI on a text file
+uv run main.py <file>          # Run the CLI on a single text file
+uv run main.py <directory>     # Run the CLI on all .txt files in a directory
 uv run pytest                  # Run tests
 uv run ruff check .            # Lint
 uv run ruff format .           # Format

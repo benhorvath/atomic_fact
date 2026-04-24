@@ -1,0 +1,14 @@
+# Entity alias mapping for atomic-fact
+# Maps variant names to canonical forms. Only entity tags are affected.
+
+[people]
+"Reid" = "Harry Reid"
+"Senator Reid" = "Harry Reid"
+
+[organizations]
+"IBM" = "International Business Machines"
+
+[places]
+"the capital" = "Washington DC"
+"Washington, DC" = "Washington DC"
+"Washington, D.C." = "Washington DC"

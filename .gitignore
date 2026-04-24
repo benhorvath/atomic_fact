@@ -1,10 +1,49 @@
-# Python-generated files
+# Python
 __pycache__/
-*.py[oc]
+*.py[cod]
+*.so
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
+*.egg
+.eggs/
 
 # Virtual environments
-.venv
+.venv/
+
+# Testing / Linting
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Distribution / Packaging
+*.whl
+*.tar.gz
+
+# Kiro
+.kiro/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# atomic-fact cache (intermediate results from --resume)
+.atomic_fact_cache/
+
+# Experiment / throwaway files
+experiment_*.py
+mockup_*.html
+
+# Vendored JS libs (from pyvis)
+lib/
+
+# Editor
+.vscode/

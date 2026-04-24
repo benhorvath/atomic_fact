@@ -6,10 +6,18 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "click>=8.3.2",
-    "langchain>=1.2.15",
     "langchain-text-splitters>=1.1.1",
     "openai>=2.31.0",
     "pydantic>=2.12.5",
+]
+
+[project.optional-dependencies]
+cluster = [
+    "sentence-transformers>=3.0",
+    "scikit-learn>=1.3",
+]
+network = [
+    "networkx>=3.0",
 ]
 
 [project.scripts]
@@ -25,6 +33,9 @@ src = ["src"]
 dev = [
     "pytest>=9.0.3",
     "ruff>=0.15.10",
+    "sentence-transformers>=3.0",
+    "scikit-learn>=1.3",
+    "networkx>=3.0",
 ]
 
 [build-system]

@@ -46,9 +46,17 @@ class AtomicFact(BaseModel):
 
     fact: str = Field(description="Standalone factual statement")
     quote: str = Field(description="Verbatim quote from the source text")
-    entities: list[str] = Field(
+    people: list[str] = Field(
         default_factory=list,
-        description="Detected named entities (people, places, organizations, etc.)",
+        description="People mentioned (e.g., 'Colm Kelleher', 'Harry Reid')",
+    )
+    organizations: list[str] = Field(
+        default_factory=list,
+        description="Organizations mentioned (e.g., 'NIDS', 'CIA', 'DIA')",
+    )
+    places: list[str] = Field(
+        default_factory=list,
+        description="Places mentioned (e.g., 'Skinwalker Ranch', 'Utah')",
     )
     dates: list[str] = Field(
         default_factory=list,
@@ -57,9 +65,31 @@ class AtomicFact(BaseModel):
     confidence: Confidence = Field(
         description="Confidence level of the extraction",
     )
+    idf_score: float | None = Field(
+        default=None,
+        description="Mean IDF score of the fact's tokens (computed post-extraction)",
+    )
+    entropy: float | None = Field(
+        default=None,
+        description="Shannon entropy of the fact's token distribution (computed post-extraction)",
+    )
 
 
 class ExtractionResult(BaseModel):
     """Wrapper for a list of extracted atomic facts."""
 
     facts: list[AtomicFact] = Field(default_factory=list)
+
+
+class DocumentResult(BaseModel):
+    """Extraction results for a single document within a collection."""
+
+    source: str = Field(description="Source filename (e.g., 'memo_1968.txt')")
+    facts: list[AtomicFact] = Field(default_factory=list)
+
+
+class CollectionResult(BaseModel):
+    """Wrapper for multi-document extraction results."""
+
+    documents: list[DocumentResult] = Field(default_factory=list)
+

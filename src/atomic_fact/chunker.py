@@ -18,6 +18,8 @@ from __future__ import annotations
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+import click
+
 DEFAULT_MAX_CHARS = 12_000
 DEFAULT_OVERLAP = 0.10
 
@@ -54,4 +56,10 @@ def chunk_text(
         keep_separator=True,
     )
 
-    return splitter.split_text(text)
+    chunks = splitter.split_text(text)
+    click.echo(
+        f"Text is {len(text):,} chars — split into {len(chunks)} chunks "
+        f"(max {max_chars:,} chars, {overlap:.0%} overlap)",
+        err=True,
+    )
+    return chunks

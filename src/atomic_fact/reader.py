@@ -47,3 +47,38 @@ def read_text(path: str, encoding: str = "utf-8") -> str:
         raise click.UsageError(
             f"Could not decode '{filepath}' as {encoding}: {exc}"
         ) from exc
+
+
+def read_directory(path: str, encoding: str = "utf-8") -> list[tuple[str, str]]:
+    """Read all .txt files in a directory and return their contents.
+
+    Only considers top-level files (no recursive descent). Files are
+    returned sorted by name for deterministic ordering.
+
+    Args:
+        path: Path to the directory.
+        encoding: File encoding. Defaults to UTF-8.
+
+    Returns:
+        A list of (filename, text) tuples, sorted by filename.
+
+    Raises:
+        click.UsageError: If the path is not a directory or contains
+            no .txt files.
+    """
+    dirpath = Path(path)
+
+    if not dirpath.is_dir():
+        raise click.UsageError(f"Not a directory: {dirpath}")
+
+    txt_files = sorted(dirpath.glob("*.txt"))
+
+    if not txt_files:
+        raise click.UsageError(f"No .txt files found in {dirpath}")
+
+    results: list[tuple[str, str]] = []
+    for filepath in txt_files:
+        text = read_text(str(filepath), encoding=encoding)
+        results.append((filepath.name, text))
+
+    return results

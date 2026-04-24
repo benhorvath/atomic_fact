@@ -20,16 +20,46 @@ Examples:
 
 ## Input
 
-Plain text files (.txt). Future versions may add modules for ingesting other document types (PDFs, etc.).
+- Single plain text file (.txt): `uv run main.py document.txt`
+- Directory of plain text files: `uv run main.py ./docs/` — all `.txt` files in the directory are processed.
+
+Future versions may add modules for ingesting other document types (PDFs, etc.).
 
 ## Output
 
-JSON array of atomic fact objects. Each fact includes:
+### Single-file mode
+
+JSON object wrapping an array of atomic fact objects (`ExtractionResult`):
+
+```json
+{"facts": [...]}
+```
+
+### Directory (collection) mode
+
+JSON object wrapping per-document results (`CollectionResult`), each tagged with the source filename:
+
+```json
+{
+  "documents": [
+    {"source": "interview_jones.txt", "facts": [...]},
+    {"source": "memo_1968.txt", "facts": [...]}
+  ]
+}
+```
+
+### Atomic fact fields
+
+Each fact includes:
 - `fact`: The atomic fact as a clear standalone statement
 - `quote`: The corresponding verbatim quote from the source text
-- `entities`: Detected proper nouns / named entities (people, places, organizations, etc.)
+- `people`, `organizations`, `places`: Detected named entities
 - `dates`: Detected dates, standardized to ISO 8601 format where possible
-- `confidence`: A confidence level for the extraction (e.g., high / medium / low)
+- `confidence`: A confidence level for the extraction (high / medium / low)
+
+### Processing model
+
+Each document is processed independently — its own context preamble, chunking, and deduplication. There is no cross-document context sharing.
 
 ## LLM Usage
 
@@ -40,3 +70,6 @@ JSON array of atomic fact objects. Each fact includes:
 
 - Additional input formats (PDF, HTML, etc.)
 - General knowledge filtering as a post-processing step
+- Cross-document entity resolution (e.g., linking "Senator Reid" in one document to "Harry Reid" in another)
+- Persistent project/case state with incremental re-runs
+- Viewer updates for multi-document output
