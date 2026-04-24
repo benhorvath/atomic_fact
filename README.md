@@ -1,10 +1,31 @@
-# atomic-fact
+![atomic-fact banner](banner.png)
 
-Extract atomic facts from text documents using LLMs.
+Extract atomic facts from text documents using an LLM.
 
 An "atomic fact" is a single, specific, verifiable claim that an investigator would write down -- a concrete event, action, relationship, or dated occurrence involving identifiable people, organizations, or places. General knowledge, opinions, and vague descriptions are excluded.
 
 Once the atomic facts are extracted, they can viewed in an HTML report, or clustered. There is also a tool to perform (manual) entity resolution.
+
+### Output
+
+```json
+{
+  "facts": [
+    {
+      "fact": "Tim Cook joined Apple as a senior vice president in 1998.",
+      "quote": "I joined Apple as a senior vice president in 1998.",
+      "people": ["Tim Cook"],
+      "organizations": ["Apple"],
+      "places": [],
+      "dates": ["1998"],
+      "confidence": "high",
+      "idf_score": 2.14,
+      "entropy": 2.58
+    }
+  ]
+}
+```
+
 
 ## Setup
 
