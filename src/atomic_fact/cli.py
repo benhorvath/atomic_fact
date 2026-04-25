@@ -52,7 +52,7 @@ def main() -> None:
 
 @main.command()
 @click.argument("path", type=click.Path(exists=True))
-@click.option("--model", default="gpt-4o", show_default=True, help="OpenAI model to use.")
+@click.option("--model", default="gpt-5.4-mini", show_default=True, help="OpenAI model to use.")
 @click.option("--output", type=click.Path(), default=None, help="Write JSON output to a file instead of stdout.")
 @click.option("--resume", is_flag=True, help="In directory mode, skip documents whose results are already cached.")
 @click.option("--concurrency", default=1, show_default=True, type=int, help="Documents to process in parallel (directory mode).")
@@ -131,15 +131,16 @@ def resolve(json_file: str, aliases: str, output: str | None) -> None:
 
 @main.command()
 @click.argument("json_file", type=click.Path(exists=True))
+@click.option("--title", default="atomic-fact report", help="Title to display in the HTML report.")
 @click.option("-o", "--output", type=click.Path(), default=None, help="Output HTML file path. Defaults to <input>.html.")
-def view(json_file: str, output: str | None) -> None:
+def view(json_file: str, title: str, output: str | None) -> None:
     """Generate an HTML report from atomic-fact JSON output."""
     from atomic_fact.viewer import _normalize_to_collection, generate_html
 
     json_path = Path(json_file)
     data = json.loads(json_path.read_text(encoding="utf-8"))
     collection = _normalize_to_collection(data)
-    html = generate_html(collection)
+    html = generate_html(collection, title=title)
 
     if output is None:
         output = str(json_path.with_suffix(".html"))

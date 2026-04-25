@@ -46,7 +46,7 @@ class TestExtract:
             _sample_result()
         )
 
-        result = extract("Some short text.", model="gpt-4o")
+        result = extract("Some short text.", model="gpt-5.4-mini")
 
         assert len(result.facts) == 1
         assert result.facts[0].fact == "Wayne met the president."
@@ -66,7 +66,7 @@ class TestExtract:
         with patch(
             "atomic_fact.extractor.chunk_text", return_value=["chunk1", "chunk2"]
         ):
-            result = extract("long text", model="gpt-4o")
+            result = extract("long text", model="gpt-5.4-mini")
 
         # Same quote in both chunks — should be deduplicated to 1
         assert len(result.facts) == 1

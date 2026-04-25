@@ -7,9 +7,6 @@ Development notes:
       intact across chunk boundaries as much as possible.
     - Overlap is expressed as a fraction (default 0.10 = 10%) of
       max_chars, converted to an absolute character count for the splitter.
-    - max_chars defaults to 12,000 which is conservative for gpt-4o's
-      context window but leaves plenty of room for the system prompt and
-      response tokens.
     - The chunk_text() interface stays the same so the rest of the
       codebase (extractor.py) doesn't need to change.
 """

@@ -115,7 +115,7 @@ Write the summary as plain prose. This summary will be provided as context \
 to a fact extraction system processing later sections of the document.\
 """
 
-DEFAULT_MODEL = "gpt-4o"
+DEFAULT_MODEL = "gpt-5.4-mini"
 
 
 # ---------------------------------------------------------------------------

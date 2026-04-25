@@ -21,10 +21,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import HDBSCAN
 
-MODEL_CACHE = os.path.expanduser(
-    "~/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2"
-    "/snapshots/c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
-)
+
 MIN_CLUSTER_SIZE = 3
 MAX_CLUSTER_SIZE = 30
 
@@ -161,7 +158,7 @@ def main(json_file: str, output: str | None, epsilon: float) -> None:
         sys.exit(1)
 
     click.echo("Loading embedding model...", err=True)
-    model = SentenceTransformer(MODEL_CACHE)
+    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
     click.echo("Encoding facts...", err=True)
     embeddings = model.encode([f["text"] for f in facts], normalize_embeddings=True)
 

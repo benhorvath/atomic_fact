@@ -90,7 +90,7 @@ Extract atomic facts from a single `.txt` file or a directory of `.txt` files.
 ```bash
 uv run atomic-fact extract document.txt
 uv run atomic-fact extract document.txt --output results.json
-uv run atomic-fact extract document.txt --model gpt-4o-mini
+uv run atomic-fact extract document.txt --model gpt-5.4-mini
 
 # Directory (collection mode)
 uv run atomic-fact extract ./docs/ --output collection.json
@@ -100,7 +100,7 @@ uv run atomic-fact extract ./docs/ --concurrency 4       # parallel processing
 
 | Flag | Description |
 |------|-------------|
-| `--model TEXT` | OpenAI model to use (default: `gpt-4o`) |
+| `--model TEXT` | OpenAI model to use (default: `gpt-5.4-mini`) |
 | `--output PATH` | Write JSON to a file instead of stdout |
 | `--resume` | Skip documents whose results are already cached |
 | `--concurrency N` | Documents to process in parallel (default: 1) |
