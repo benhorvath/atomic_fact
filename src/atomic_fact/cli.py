@@ -40,6 +40,7 @@ def _setup_logging(verbose: bool) -> None:
 # Top-level group
 # -----------------------------------------------------------------------
 
+
 @click.group()
 @click.version_option(package_name="atomic-fact")
 def main() -> None:
@@ -50,12 +51,30 @@ def main() -> None:
 # extract subcommand
 # -----------------------------------------------------------------------
 
+
 @main.command()
 @click.argument("path", type=click.Path(exists=True))
-@click.option("--model", default="gpt-5.4-mini", show_default=True, help="OpenAI model to use.")
-@click.option("--output", type=click.Path(), default=None, help="Write JSON output to a file instead of stdout.")
-@click.option("--resume", is_flag=True, help="In directory mode, skip documents whose results are already cached.")
-@click.option("--concurrency", default=1, show_default=True, type=int, help="Documents to process in parallel (directory mode).")
+@click.option(
+    "--model", default="gpt-5.4-mini", show_default=True, help="OpenAI model to use."
+)
+@click.option(
+    "--output",
+    type=click.Path(),
+    default=None,
+    help="Write JSON output to a file instead of stdout.",
+)
+@click.option(
+    "--resume",
+    is_flag=True,
+    help="In directory mode, skip documents whose results are already cached.",
+)
+@click.option(
+    "--concurrency",
+    default=1,
+    show_default=True,
+    type=int,
+    help="Documents to process in parallel (directory mode).",
+)
 @click.option("--verbose", is_flag=True, help="Enable debug-level logging.")
 def extract(
     path: str,
@@ -76,7 +95,12 @@ def extract(
         if concurrency > 1:
             asyncio.run(
                 _process_directory_async(
-                    path, async_extract, model, output, resume, concurrency,
+                    path,
+                    async_extract,
+                    model,
+                    output,
+                    resume,
+                    concurrency,
                 )
             )
         else:
@@ -89,10 +113,22 @@ def extract(
 # resolve subcommand
 # -----------------------------------------------------------------------
 
+
 @main.command()
 @click.argument("json_file", type=click.Path(exists=True))
-@click.option("--aliases", type=click.Path(exists=True), required=True, help="TOML file mapping entity name variants to canonical forms.")
-@click.option("-o", "--output", type=click.Path(), default=None, help="Output JSON file. Defaults to overwriting the input.")
+@click.option(
+    "--aliases",
+    type=click.Path(exists=True),
+    required=True,
+    help="TOML file mapping entity name variants to canonical forms.",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(),
+    default=None,
+    help="Output JSON file. Defaults to overwriting the input.",
+)
 def resolve(json_file: str, aliases: str, output: str | None) -> None:
     """Apply entity aliases to an existing JSON output and recompute scores.
 
@@ -118,6 +154,7 @@ def resolve(json_file: str, aliases: str, output: str | None) -> None:
         json_str = collection.model_dump_json(indent=2)
     else:
         from atomic_fact.models import ExtractionResult
+
         json_str = ExtractionResult(facts=all_facts).model_dump_json(indent=2)
 
     out_path = Path(output) if output else json_path
@@ -129,10 +166,19 @@ def resolve(json_file: str, aliases: str, output: str | None) -> None:
 # view subcommand
 # -----------------------------------------------------------------------
 
+
 @main.command()
 @click.argument("json_file", type=click.Path(exists=True))
-@click.option("--title", default="atomic-fact report", help="Title to display in the HTML report.")
-@click.option("-o", "--output", type=click.Path(), default=None, help="Output HTML file path. Defaults to <input>.html.")
+@click.option(
+    "--title", default="atomic-fact report", help="Title to display in the HTML report."
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(),
+    default=None,
+    help="Output HTML file path. Defaults to <input>.html.",
+)
 def view(json_file: str, title: str, output: str | None) -> None:
     """Generate an HTML report from atomic-fact JSON output."""
     from atomic_fact.viewer import _normalize_to_collection, generate_html
@@ -154,13 +200,27 @@ def view(json_file: str, title: str, output: str | None) -> None:
 # cluster subcommand
 # -----------------------------------------------------------------------
 
+
 @main.command()
 @click.argument("json_file", type=click.Path(exists=True))
-@click.option("-o", "--output", type=click.Path(), default=None, help="Write JSON output to file. Prints to stdout if omitted.")
-@click.option("--epsilon", type=float, default=0.3, show_default=True, help="HDBSCAN epsilon for sub-clustering. Lower = more clusters.")
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(),
+    default=None,
+    help="Write JSON output to file. Prints to stdout if omitted.",
+)
+@click.option(
+    "--epsilon",
+    type=float,
+    default=0.3,
+    show_default=True,
+    help="HDBSCAN epsilon for sub-clustering. Lower = more clusters.",
+)
 def cluster(json_file: str, output: str | None, epsilon: float) -> None:
     """Cluster atomic facts by topic using sentence embeddings."""
     from atomic_fact.cluster import main as cluster_main
+
     # Invoke the cluster module's click command directly via its context
     ctx = click.Context(cluster_main, info_name="cluster")
     ctx.invoke(cluster_main, json_file=json_file, output=output, epsilon=epsilon)
@@ -169,6 +229,7 @@ def cluster(json_file: str, output: str | None, epsilon: float) -> None:
 # -----------------------------------------------------------------------
 # Internal helpers for extract
 # -----------------------------------------------------------------------
+
 
 def _process_file(path, extractor, model, output):
     """Process a single text file."""
@@ -199,7 +260,9 @@ def _process_directory(path, extractor, model, output, resume):
             doc = DocumentResult(**json.loads(cache_file.read_text(encoding="utf-8")))
             documents.append(doc)
             cached_count += 1
-            logger.info("[%d/%d] %s (cached, %d facts)", i, total, filename, len(doc.facts))
+            logger.info(
+                "[%d/%d] %s (cached, %d facts)", i, total, filename, len(doc.facts)
+            )
             continue
         logger.info("[%d/%d] %s", i, total, filename)
         result = extractor(text, model=model)
@@ -209,11 +272,15 @@ def _process_directory(path, extractor, model, output, resume):
     _write_collection(documents, total, cached_count, output)
 
 
-async def _process_directory_async(path, async_extractor, model, output, resume, concurrency):
+async def _process_directory_async(
+    path, async_extractor, model, output, resume, concurrency
+):
     """Process all .txt files in a directory (parallel with semaphore)."""
     files = read_directory(path)
     total = len(files)
-    logger.info("Found %d .txt file(s) in %s (concurrency=%d)", total, path, concurrency)
+    logger.info(
+        "Found %d .txt file(s) in %s (concurrency=%d)", total, path, concurrency
+    )
     cache_dir = Path(path) / CACHE_DIR_NAME
     cache_dir.mkdir(exist_ok=True)
     semaphore = asyncio.Semaphore(concurrency)
@@ -222,14 +289,18 @@ async def _process_directory_async(path, async_extractor, model, output, resume,
         cache_file = cache_dir / f"{filename}.json"
         if resume and cache_file.exists():
             doc = DocumentResult(**json.loads(cache_file.read_text(encoding="utf-8")))
-            logger.info("[%d/%d] %s (cached, %d facts)", idx, total, filename, len(doc.facts))
+            logger.info(
+                "[%d/%d] %s (cached, %d facts)", idx, total, filename, len(doc.facts)
+            )
             return idx, filename, doc
         async with semaphore:
             logger.info("[%d/%d] %s (processing)", idx, total, filename)
             result = await async_extractor(text, model=model)
             doc = DocumentResult(source=filename, facts=result.facts)
             cache_file.write_text(doc.model_dump_json(indent=2), encoding="utf-8")
-            logger.info("[%d/%d] %s done (%d facts)", idx, total, filename, len(doc.facts))
+            logger.info(
+                "[%d/%d] %s done (%d facts)", idx, total, filename, len(doc.facts)
+            )
             return idx, filename, doc
 
     tasks = [process_one(i, fn, txt) for i, (fn, txt) in enumerate(files, 1)]
@@ -237,7 +308,8 @@ async def _process_directory_async(path, async_extractor, model, output, resume,
     completed_sorted = sorted(completed, key=lambda x: x[0])
     documents = [doc for _, _, doc in completed_sorted]
     cached_count = sum(
-        1 for _, (fn, _) in enumerate(files, 1)
+        1
+        for _, (fn, _) in enumerate(files, 1)
         if resume and (cache_dir / f"{fn}.json").exists()
     )
     _write_collection(documents, total, cached_count, output)
@@ -252,9 +324,13 @@ def _write_collection(documents, total, cached_count, output):
     total_facts = sum(len(d.facts) for d in documents)
     json_str = collection.model_dump_json(indent=2)
     if cached_count:
-        logger.info("Resumed: %d cached, %d processed", cached_count, total - cached_count)
+        logger.info(
+            "Resumed: %d cached, %d processed", cached_count, total - cached_count
+        )
     if output:
         Path(output).write_text(json_str, encoding="utf-8")
-        logger.info("Wrote %d facts from %d documents to %s", total_facts, total, output)
+        logger.info(
+            "Wrote %d facts from %d documents to %s", total_facts, total, output
+        )
     else:
         click.echo(json_str)

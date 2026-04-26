@@ -5,7 +5,12 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from atomic_fact.models import AtomicFact, CollectionResult, DocumentResult, ExtractionResult
+from atomic_fact.models import (
+    AtomicFact,
+    CollectionResult,
+    DocumentResult,
+    ExtractionResult,
+)
 
 
 def _make_fact(**overrides):

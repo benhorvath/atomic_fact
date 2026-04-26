@@ -92,4 +92,3 @@ class CollectionResult(BaseModel):
     """Wrapper for multi-document extraction results."""
 
     documents: list[DocumentResult] = Field(default_factory=list)
-

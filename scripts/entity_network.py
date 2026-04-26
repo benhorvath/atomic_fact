@@ -83,7 +83,12 @@ TYPE_COLORS = {"person": "#bc8cff", "org": "#58a6ff", "place": "#39d2c0"}
 
 
 def _escape(s: str) -> str:
-    return s.replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"').replace("\n", " ")
+    return (
+        s.replace("\\", "\\\\")
+        .replace("'", "\\'")
+        .replace('"', '\\"')
+        .replace("\n", " ")
+    )
 
 
 def _render_html(G: nx.Graph, output: str, focus_entity: str | None) -> None:
@@ -172,17 +177,31 @@ def _render_html(G: nx.Graph, output: str, focus_entity: str | None) -> None:
 </body></html>"""
 
     Path(output).write_text(html, encoding="utf-8")
-    click.echo(f"Wrote {output} ({len(G.nodes())} nodes, {len(G.edges())} edges)", err=True)
+    click.echo(
+        f"Wrote {output} ({len(G.nodes())} nodes, {len(G.edges())} edges)", err=True
+    )
 
 
 @click.command()
 @click.argument("input_file", type=click.Path(exists=True))
-@click.option("-o", "--output", type=click.Path(), default="entity_network.html",
-              show_default=True, help="Output HTML file.")
-@click.option("--min-pmi", type=float, default=0.5, show_default=True,
-              help="Minimum PMI to include an edge.")
-@click.option("--entity", default=None,
-              help="Focus on a single entity and its neighbors.")
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(),
+    default="entity_network.html",
+    show_default=True,
+    help="Output HTML file.",
+)
+@click.option(
+    "--min-pmi",
+    type=float,
+    default=0.5,
+    show_default=True,
+    help="Minimum PMI to include an edge.",
+)
+@click.option(
+    "--entity", default=None, help="Focus on a single entity and its neighbors."
+)
 def main(input_file: str, output: str, min_pmi: float, entity: str | None) -> None:
     """Build an interactive entity co-occurrence network."""
     data = json.loads(Path(input_file).read_text(encoding="utf-8"))
@@ -190,7 +209,10 @@ def main(input_file: str, output: str, min_pmi: float, entity: str | None) -> No
     click.echo(f"Loaded {len(facts)} facts", err=True)
 
     G = _build_graph(facts, min_pmi)
-    click.echo(f"Graph: {len(G.nodes())} nodes, {len(G.edges())} edges (min_pmi={min_pmi})", err=True)
+    click.echo(
+        f"Graph: {len(G.nodes())} nodes, {len(G.edges())} edges (min_pmi={min_pmi})",
+        err=True,
+    )
 
     _render_html(G, output, entity)
 

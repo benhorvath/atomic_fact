@@ -13,7 +13,12 @@ from pathlib import Path
 
 import click
 
-from atomic_fact.models import AtomicFact, CollectionResult, DocumentResult, ExtractionResult
+from atomic_fact.models import (
+    AtomicFact,
+    CollectionResult,
+    DocumentResult,
+    ExtractionResult,
+)
 
 
 def _escape(text: str) -> str:
@@ -30,11 +35,17 @@ def _normalize_to_collection(data: dict) -> CollectionResult:
     if "documents" in data:
         return CollectionResult(**data)
     return CollectionResult(
-        documents=[DocumentResult(source="(single document)", facts=ExtractionResult(**data).facts)]
+        documents=[
+            DocumentResult(
+                source="(single document)", facts=ExtractionResult(**data).facts
+            )
+        ]
     )
 
 
-def generate_html(collection: CollectionResult, title: str = "atomic-fact report") -> str:
+def generate_html(
+    collection: CollectionResult, title: str = "atomic-fact report"
+) -> str:
     """Generate a self-contained HTML report from a CollectionResult."""
     all_facts: list[tuple[str, AtomicFact]] = []
     for doc in collection.documents:
@@ -122,7 +133,9 @@ def generate_html(collection: CollectionResult, title: str = "atomic-fact report
 
         score_badges = ""
         if fact.idf_score is not None:
-            score_badges += f'<span class="badge badge-idf" title="Mean IDF">IDF {idf_val}</span>'
+            score_badges += (
+                f'<span class="badge badge-idf" title="Mean IDF">IDF {idf_val}</span>'
+            )
         if fact.entropy is not None:
             score_badges += f'<span class="badge badge-entropy" title="Entropy">H {entropy_val}</span>'
 
@@ -139,13 +152,13 @@ def generate_html(collection: CollectionResult, title: str = "atomic-fact report
             f'\n        <span class="fact-text">{_escape(fact.fact)}</span>'
             f'\n        <div class="fact-badges">{source_badge}{score_badges}'
             f'<span class="badge {badge_cls}">{fact.confidence.value}</span></div>'
-            f'\n      </div>'
+            f"\n      </div>"
             f'\n      <div class="fact-meta">'
             f'\n        <div class="fact-entities">{tags}</div>'
-            f'\n        <button class="quote-toggle" onclick="this.closest(\'.fact-card\').querySelector(\'.fact-quote\').classList.toggle(\'show\')">source \u25be</button>'
-            f'\n      </div>'
+            f"\n        <button class=\"quote-toggle\" onclick=\"this.closest('.fact-card').querySelector('.fact-quote').classList.toggle('show')\">source \u25be</button>"
+            f"\n      </div>"
             f'\n      <div class="fact-quote">\u201c{_escape(fact.quote)}\u201d</div>'
-            f'\n    </div>'
+            f"\n    </div>"
         )
 
     return _TEMPLATE.format(
@@ -312,10 +325,16 @@ function filterSidebarEntities(q){{const lq=q.toLowerCase();document.querySelect
 
 @click.command()
 @click.argument("json_file", type=click.Path(exists=True))
-@click.option("--title", default="atomic-fact report",
-              help="Title to display in the HTML report.")
-@click.option("-o", "--output", type=click.Path(), default=None,
-              help="Output HTML file path. Defaults to <input>.html.")
+@click.option(
+    "--title", default="atomic-fact report", help="Title to display in the HTML report."
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(),
+    default=None,
+    help="Output HTML file path. Defaults to <input>.html.",
+)
 def main(json_file: str, title: str, output: str | None) -> None:
     """Convert atomic-fact JSON output into an HTML report."""
     json_path = Path(json_file)

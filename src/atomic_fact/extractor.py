@@ -122,6 +122,7 @@ DEFAULT_MODEL = "gpt-5.4-mini"
 # Shared helpers
 # ---------------------------------------------------------------------------
 
+
 def _get_client() -> openai.OpenAI:
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
@@ -182,6 +183,7 @@ def _build_chunk_prompt(i, chunk, context, all_facts):
 # Sync extraction
 # ---------------------------------------------------------------------------
 
+
 def extract(text: str, model: str = DEFAULT_MODEL) -> ExtractionResult:
     """Extract atomic facts from text using the OpenAI API."""
     client = _get_client()
@@ -199,9 +201,15 @@ def extract(text: str, model: str = DEFAULT_MODEL) -> ExtractionResult:
     for i, chunk in enumerate(chunks, 1):
         logger.debug("  Processing chunk %d/%d (%d chars)...", i, total, len(chunk))
         system_prompt, user_message = _build_chunk_prompt(i, chunk, context, all_facts)
-        result = _extract_chunk(client, user_message, model, system_prompt=system_prompt)
+        result = _extract_chunk(
+            client, user_message, model, system_prompt=system_prompt
+        )
         new_count = _dedup_facts(result, all_facts, seen_quotes)
-        logger.debug("  Found %d new facts (chunk returned %d total)", new_count, len(result.facts))
+        logger.debug(
+            "  Found %d new facts (chunk returned %d total)",
+            new_count,
+            len(result.facts),
+        )
         if i < total:
             time.sleep(5)
 
@@ -212,6 +220,7 @@ def extract(text: str, model: str = DEFAULT_MODEL) -> ExtractionResult:
 # ---------------------------------------------------------------------------
 # Async extraction
 # ---------------------------------------------------------------------------
+
 
 async def async_extract(text: str, model: str = DEFAULT_MODEL) -> ExtractionResult:
     """Async version of extract()."""
@@ -230,9 +239,15 @@ async def async_extract(text: str, model: str = DEFAULT_MODEL) -> ExtractionResu
     for i, chunk in enumerate(chunks, 1):
         logger.debug("  Processing chunk %d/%d (%d chars)...", i, total, len(chunk))
         system_prompt, user_message = _build_chunk_prompt(i, chunk, context, all_facts)
-        result = await _async_extract_chunk(client, user_message, model, system_prompt=system_prompt)
+        result = await _async_extract_chunk(
+            client, user_message, model, system_prompt=system_prompt
+        )
         new_count = _dedup_facts(result, all_facts, seen_quotes)
-        logger.debug("  Found %d new facts (chunk returned %d total)", new_count, len(result.facts))
+        logger.debug(
+            "  Found %d new facts (chunk returned %d total)",
+            new_count,
+            len(result.facts),
+        )
         if i < total:
             await asyncio.sleep(5)
 
@@ -243,6 +258,7 @@ async def async_extract(text: str, model: str = DEFAULT_MODEL) -> ExtractionResu
 # ---------------------------------------------------------------------------
 # Private helpers — sync
 # ---------------------------------------------------------------------------
+
 
 def _generate_context(client: openai.OpenAI, text: str, model: str) -> str:
     sample = text[:4000]
@@ -255,16 +271,23 @@ def _generate_context(client: openai.OpenAI, text: str, model: str) -> str:
             ],
         )
     except openai.APIError as exc:
-        raise click.UsageError(f"OpenAI API error during context generation: {exc}") from exc
+        raise click.UsageError(
+            f"OpenAI API error during context generation: {exc}"
+        ) from exc
     return completion.choices[0].message.content or ""
 
 
-def _extract_chunk(client, text, model, system_prompt=SYSTEM_PROMPT_FIRST, max_retries=3):
+def _extract_chunk(
+    client, text, model, system_prompt=SYSTEM_PROMPT_FIRST, max_retries=3
+):
     for attempt in range(1, max_retries + 1):
         try:
             completion = client.beta.chat.completions.parse(
                 model=model,
-                messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": text}],
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": text},
+                ],
                 response_format=ExtractionResult,
             )
         except openai.AuthenticationError as exc:
@@ -272,14 +295,28 @@ def _extract_chunk(client, text, model, system_prompt=SYSTEM_PROMPT_FIRST, max_r
         except (openai.RateLimitError, openai.APITimeoutError) as exc:
             if attempt < max_retries:
                 wait = 2**attempt
-                logger.warning("Retrying in %ds (attempt %d/%d): %s", wait, attempt, max_retries, exc)
+                logger.warning(
+                    "Retrying in %ds (attempt %d/%d): %s",
+                    wait,
+                    attempt,
+                    max_retries,
+                    exc,
+                )
                 time.sleep(wait)
                 continue
-            raise click.UsageError(f"OpenAI API error after {max_retries} retries: {exc}")
+            raise click.UsageError(
+                f"OpenAI API error after {max_retries} retries: {exc}"
+            )
         except openai.APIError as exc:
             if attempt < max_retries and exc.status_code and exc.status_code >= 500:
                 wait = 2**attempt
-                logger.warning("Retrying in %ds (attempt %d/%d): %s", wait, attempt, max_retries, exc)
+                logger.warning(
+                    "Retrying in %ds (attempt %d/%d): %s",
+                    wait,
+                    attempt,
+                    max_retries,
+                    exc,
+                )
                 time.sleep(wait)
                 continue
             raise click.UsageError(f"OpenAI API error: {exc}") from exc
@@ -295,7 +332,10 @@ def _extract_chunk(client, text, model, system_prompt=SYSTEM_PROMPT_FIRST, max_r
 # Private helpers — async
 # ---------------------------------------------------------------------------
 
-async def _async_generate_context(client: openai.AsyncOpenAI, text: str, model: str) -> str:
+
+async def _async_generate_context(
+    client: openai.AsyncOpenAI, text: str, model: str
+) -> str:
     sample = text[:4000]
     try:
         completion = await client.chat.completions.create(
@@ -306,16 +346,23 @@ async def _async_generate_context(client: openai.AsyncOpenAI, text: str, model: 
             ],
         )
     except openai.APIError as exc:
-        raise click.UsageError(f"OpenAI API error during context generation: {exc}") from exc
+        raise click.UsageError(
+            f"OpenAI API error during context generation: {exc}"
+        ) from exc
     return completion.choices[0].message.content or ""
 
 
-async def _async_extract_chunk(client, text, model, system_prompt=SYSTEM_PROMPT_FIRST, max_retries=3):
+async def _async_extract_chunk(
+    client, text, model, system_prompt=SYSTEM_PROMPT_FIRST, max_retries=3
+):
     for attempt in range(1, max_retries + 1):
         try:
             completion = await client.beta.chat.completions.parse(
                 model=model,
-                messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": text}],
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": text},
+                ],
                 response_format=ExtractionResult,
             )
         except openai.AuthenticationError as exc:
@@ -323,14 +370,28 @@ async def _async_extract_chunk(client, text, model, system_prompt=SYSTEM_PROMPT_
         except (openai.RateLimitError, openai.APITimeoutError) as exc:
             if attempt < max_retries:
                 wait = 2**attempt
-                logger.warning("Retrying in %ds (attempt %d/%d): %s", wait, attempt, max_retries, exc)
+                logger.warning(
+                    "Retrying in %ds (attempt %d/%d): %s",
+                    wait,
+                    attempt,
+                    max_retries,
+                    exc,
+                )
                 await asyncio.sleep(wait)
                 continue
-            raise click.UsageError(f"OpenAI API error after {max_retries} retries: {exc}")
+            raise click.UsageError(
+                f"OpenAI API error after {max_retries} retries: {exc}"
+            )
         except openai.APIError as exc:
             if attempt < max_retries and exc.status_code and exc.status_code >= 500:
                 wait = 2**attempt
-                logger.warning("Retrying in %ds (attempt %d/%d): %s", wait, attempt, max_retries, exc)
+                logger.warning(
+                    "Retrying in %ds (attempt %d/%d): %s",
+                    wait,
+                    attempt,
+                    max_retries,
+                    exc,
+                )
                 await asyncio.sleep(wait)
                 continue
             raise click.UsageError(f"OpenAI API error: {exc}") from exc

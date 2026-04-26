@@ -12,7 +12,6 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -41,11 +40,15 @@ def _load_facts(data: dict) -> list[dict]:
 
 def _cluster(embeddings: np.ndarray, epsilon: float) -> np.ndarray:
     """Run HDBSCAN with recursive sub-clustering of large clusters."""
-    clusterer = HDBSCAN(min_cluster_size=MIN_CLUSTER_SIZE, min_samples=2, metric="euclidean")
+    clusterer = HDBSCAN(
+        min_cluster_size=MIN_CLUSTER_SIZE, min_samples=2, metric="euclidean"
+    )
     labels = clusterer.fit_predict(embeddings)
 
     n_initial = len(set(labels)) - (1 if -1 in labels else 0)
-    click.echo(f"Initial pass: {n_initial} clusters, {(labels == -1).sum()} noise", err=True)
+    click.echo(
+        f"Initial pass: {n_initial} clusters, {(labels == -1).sum()} noise", err=True
+    )
 
     final_labels = labels.copy()
     next_label = max(labels) + 1 if len(labels) > 0 else 0
@@ -54,12 +57,21 @@ def _cluster(embeddings: np.ndarray, epsilon: float) -> np.ndarray:
         indices = np.where(labels == label)[0]
         if len(indices) <= MAX_CLUSTER_SIZE:
             continue
-        click.echo(f"  Re-clustering cluster {label} ({len(indices)} facts, epsilon={epsilon})...", err=True)
-        sub = HDBSCAN(min_cluster_size=MIN_CLUSTER_SIZE, min_samples=2,
-                       metric="euclidean", cluster_selection_epsilon=epsilon)
+        click.echo(
+            f"  Re-clustering cluster {label} ({len(indices)} facts, epsilon={epsilon})...",
+            err=True,
+        )
+        sub = HDBSCAN(
+            min_cluster_size=MIN_CLUSTER_SIZE,
+            min_samples=2,
+            metric="euclidean",
+            cluster_selection_epsilon=epsilon,
+        )
         sub_labels = sub.fit_predict(embeddings[indices])
         n_sub = len(set(sub_labels)) - (1 if -1 in sub_labels else 0)
-        click.echo(f"    -> {n_sub} sub-clusters, {(sub_labels == -1).sum()} noise", err=True)
+        click.echo(
+            f"    -> {n_sub} sub-clusters, {(sub_labels == -1).sum()} noise", err=True
+        )
         for i, sl in enumerate(sub_labels):
             if sl == -1:
                 final_labels[indices[i]] = -1
@@ -70,7 +82,9 @@ def _cluster(embeddings: np.ndarray, epsilon: float) -> np.ndarray:
     return final_labels
 
 
-def _build_results(facts: list[dict], embeddings: np.ndarray, labels: np.ndarray) -> dict:
+def _build_results(
+    facts: list[dict], embeddings: np.ndarray, labels: np.ndarray
+) -> dict:
     """Build structured JSON output from clustering results."""
     clusters: dict[int, list[int]] = {}
     for i, label in enumerate(labels):
@@ -95,31 +109,37 @@ def _build_results(facts: list[dict], embeddings: np.ndarray, labels: np.ndarray
 
         members = []
         for i, d in sorted(zip(indices, dists), key=lambda x: x[1]):
-            members.append({
-                "fact": facts[i]["text"],
-                "source": facts[i]["source"],
-                "distance_to_centroid": round(d, 4),
-            })
+            members.append(
+                {
+                    "fact": facts[i]["text"],
+                    "source": facts[i]["source"],
+                    "distance_to_centroid": round(d, 4),
+                }
+            )
 
-        cluster_list.append({
-            "cluster_id": int(label),
-            "size": len(indices),
-            "representative": facts[representative_idx]["text"],
-            "facts": members,
-        })
+        cluster_list.append(
+            {
+                "cluster_id": int(label),
+                "size": len(indices),
+                "representative": facts[representative_idx]["text"],
+                "facts": members,
+            }
+        )
 
     anomalies = []
     if centroids:
         for i in range(len(facts)):
-            min_dist = float(min(
-                np.linalg.norm(embeddings[i] - c) for c in centroids.values()
-            ))
-            anomalies.append({
-                "fact": facts[i]["text"],
-                "source": facts[i]["source"],
-                "min_distance_to_centroid": round(min_dist, 4),
-                "cluster": int(labels[i]),
-            })
+            min_dist = float(
+                min(np.linalg.norm(embeddings[i] - c) for c in centroids.values())
+            )
+            anomalies.append(
+                {
+                    "fact": facts[i]["text"],
+                    "source": facts[i]["source"],
+                    "min_distance_to_centroid": round(min_dist, 4),
+                    "cluster": int(labels[i]),
+                }
+            )
         anomalies.sort(key=lambda x: x["min_distance_to_centroid"], reverse=True)
 
     noise_list = []
@@ -141,10 +161,20 @@ def _build_results(facts: list[dict], embeddings: np.ndarray, labels: np.ndarray
 
 @click.command()
 @click.argument("json_file", type=click.Path(exists=True))
-@click.option("-o", "--output", type=click.Path(), default=None,
-              help="Write JSON output to file. Prints to stdout if omitted.")
-@click.option("--epsilon", type=float, default=0.3, show_default=True,
-              help="HDBSCAN cluster_selection_epsilon for sub-clustering. Lower = more clusters.")
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(),
+    default=None,
+    help="Write JSON output to file. Prints to stdout if omitted.",
+)
+@click.option(
+    "--epsilon",
+    type=float,
+    default=0.3,
+    show_default=True,
+    help="HDBSCAN cluster_selection_epsilon for sub-clustering. Lower = more clusters.",
+)
 def main(json_file: str, output: str | None, epsilon: float) -> None:
     """Cluster atomic facts by topic using sentence embeddings + HDBSCAN."""
     json_path = Path(json_file)
