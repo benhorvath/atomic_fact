@@ -48,15 +48,15 @@ class AtomicFact(BaseModel):
     quote: str = Field(description="Verbatim quote from the source text")
     people: list[str] = Field(
         default_factory=list,
-        description="People mentioned (e.g., 'Colm Kelleher', 'Harry Reid')",
+        description="People mentioned (e.g., 'George Washington', 'Britney Spears')",
     )
     organizations: list[str] = Field(
         default_factory=list,
-        description="Organizations mentioned (e.g., 'NIDS', 'CIA', 'DIA')",
+        description="Organizations mentioned (e.g., 'NASA', 'CIA', 'DIA')",
     )
     places: list[str] = Field(
         default_factory=list,
-        description="Places mentioned (e.g., 'Skinwalker Ranch', 'Utah')",
+        description="Places mentioned (e.g., 'Kentucky', 'Newport')",
     )
     dates: list[str] = Field(
         default_factory=list,

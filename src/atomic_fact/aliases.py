@@ -12,11 +12,11 @@ Example aliases.toml:
     "Reid" = "Harry Reid"
 
     [organizations]
-    "NIDS" = "National Institute for Discovery Science"
-    "NIDSci" = "National Institute for Discovery Science"
+    "National Aeronautics and Space Administration" = "NASA"
+    "the space agency" = "NASA"
 
     [places]
-    "the ranch" = "Skinwalker Ranch"
+    "the ranch" = "Waggoner Ranch"
 """
 
 from __future__ import annotations
